@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nearby Restaurants</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            padding: 10px;
+            background: #009688;
+            color: white;
+        }
+        .restaurant {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Nearby Restaurants</h1>
+    </header>
+<div>
+    <p style="font-size: 20px; color: #4CAF50; margin: 5px 0;">Bawarchi Restaurants</p>
+    <p style="font-size: 20px; color: #4CAF50; margin: 5px 0;">Deccan Delight</p>
+    <p style="font-size: 20px; color: #4CAF50; margin: 5px 0;">Hyderabad Spice</p>
+    
+</div>
+
+
+<div class="content" id="restaurantsList"></div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const location = urlParams.get('location');
+
+    if (location) {
+        const clientId = 'YOUR_CLIENT_ID'; // Replace with your Foursquare client ID
+        const clientSecret = 'YOUR_CLIENT_SECRET'; // Replace with your Foursquare client secret
+        const apiUrl = `https://api.foursquare.com/v2/venues/explore?near=${location}&section=food&client_id=${clientId}&client_secret=${clientSecret}&v=20230101`;
+
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const venues = data.response.groups[0].items;
+                const restaurantsList = document.getElementById('restaurantsList');
+
+                if (venues.length > 0) {
+                    venues.forEach(item => {
+                        const restaurant = item.venue;
+                        const restaurantDiv = document.createElement('div');
+                        restaurantDiv.classList.add('restaurant');
+                        restaurantDiv.innerHTML = `
+                            <strong>${restaurant.name}</strong><br>
+                            ${restaurant.location.address ? restaurant.location.address + ', ' : ''} 
+                            ${restaurant.location.city ? restaurant.location.city + ', ' : ''} 
+                            ${restaurant.location.country ? restaurant.location.country : ''} <br>
+                            <a href="${restaurant.url}" target="_blank">More Info</a>
+                        `;
+                        restaurantsList.appendChild(restaurantDiv);
+                    });
+                } else {
+                    restaurantsList.innerHTML = '<p>No restaurants found in this area.</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching restaurants:', error);
+                document.getElementById('restaurantsList').innerHTML = '<p>Error fetching restaurants. Please try again later.</p>';
+            });
+    } else {
+        document.getElementById('restaurantsList').innerHTML = '<p>Please provide a location.</p>';
+    }
+</script>
+
+</body>
+</html>
